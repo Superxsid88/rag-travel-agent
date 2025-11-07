@@ -1,0 +1,3 @@
+Policy: Luggage
+- Each passenger can carry one 20kg check-in luggage and one cabin bag.
+- Extra luggage may incur additional fees depending on route and operator.
