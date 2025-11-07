@@ -46,3 +46,13 @@ Sample docs in `data/travel_docs`. Replace with BitlaSoft-specific policies late
 
 ## 📜 License
 MIT
+
+
+### HF Local Generation (no OpenAI needed)
+Set in `.env`:
+
+```
+USE_HF_LOCAL=true
+HF_LOCAL_MODEL=google/flan-t5-small
+```
+This uses a small local `transformers` model on CPU or your RTX 3050.

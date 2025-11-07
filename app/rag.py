@@ -6,6 +6,22 @@ import httpx
 
 load_dotenv()
 
+
+USE_HF_LOCAL = os.getenv("USE_HF_LOCAL", "true").lower() == "true"
+HF_LOCAL_MODEL = os.getenv("HF_LOCAL_MODEL", "google/flan-t5-small")
+
+# Lazy import/setup for HF
+_hf_pipe = None
+def _ensure_hf():
+    global _hf_pipe
+    if _hf_pipe is None:
+        from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
+        tok = AutoTokenizer.from_pretrained(HF_LOCAL_MODEL)
+        mdl = AutoModelForSeq2SeqLM.from_pretrained(HF_LOCAL_MODEL)
+        _hf_pipe = pipeline("text2text-generation", model=mdl, tokenizer=tok)
+    return _hf_pipe
+
+
 USE_OPENAI = os.getenv("USE_OPENAI", "false").lower() == "true"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
@@ -22,6 +38,8 @@ class RAGPipeline:
         res = self.collection.query(query_texts=[question], n_results=4)
         contexts = [d for d in (res.get("documents") or [[]])[0]]
         context = "\n\n".join(contexts) if contexts else "No docs found."
+        if USE_HF_LOCAL:
+            return await self._hf_generate(question, context)
         if USE_OPENAI:
             return await self._openai_generate(question, context)
         return f"""Answer (grounded):
